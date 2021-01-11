@@ -1,0 +1,39 @@
+install.packages("ggplot2")
+install.packages("ggmap")
+library(ggmap)
+library(ggplot2)
+
+register_google(key='')      # google API Key
+
+map<-ggmap(get_map(location='대전광역시청', zoom=14, maptype='roadmap'))   # roadmap
+
+map + geom_line(data=df, aes(x=lon, y=lat), color="blue", linetype=1, show.legend = FALSE) +
+  geom_point(data=df, aes(x=lon, y=lat), color="blue", size=5, show.legend = FALSE) # line + point
+
+#공공데이터 지하철 노선도 검색
+install.packages("devtools")
+library(devtools)
+install_github("plgrmr/readAny", force = TRUE)
+library(readAny)
+sub<-read.any('대전광역시도시철도공사.csv', header = TRUE)
+View(sub)
+map<-ggmap(get_map(location='대전광역시청', zoom=14, maptype='roadmap'))
+map + geom_line(data=sub,aes(x=역위도, y=역경도), color='red', linetype=1, show.legend = FALSE)+
+  geom_point(data=sub, aes(x=역위도, y=역경도), color="blue") 
+
+#대전시 지하철(판암, 반석) 하차량 확인 및 plot으로 바꾸기 
+dde <- read_csv("dd.csv")
+View(dde)
+str(dde)
+library(dplyr)
+dde1<-dde%>%arrange(station)
+plot(dde1)
+p <- ggplot(data=dde1, aes(x=take, y=out))
+p + geom_point(data=dde1, aes(x=take, y=out, color=station))
+
+#귀무가설: 판암역의 승하차량 인원하고 반석역의 승하차량 인원하고 연관없다. 
+
+t.test(formula= out ~ station, data=dde1)
+
+#p 값이 낮다는 것은, 역별로 판암과 반석의 승차량과 하차량이 모두 관계가 있따는 것
+#을 의미하나다. 
